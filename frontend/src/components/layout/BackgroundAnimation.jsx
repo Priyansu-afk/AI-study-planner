@@ -27,22 +27,22 @@ const BackgroundAnimation = () => {
       </motion.div>
 
       {/* Decorative Light Streaks */}
-      <motion.div 
+      <motion.div
         animate={{ opacity: [0.2, 0.4, 0.2], x: [-100, 100, -100] }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" 
+        className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm"
       />
-      
+
       {/* Dark Overlay for Readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90" />
-      
+
       {/* Digital Grid Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e11d4808_1px,transparent_1px),linear-gradient(to_bottom,#e11d4808_1px,transparent_1px)] bg-[size:60px_60px] opacity-30" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:20px_20px] opacity-15" />
-      
+
       {/* Noise Texture for Film Grain look */}
       <div className="absolute inset-0 bg-noise opacity-[0.03] mix-blend-overlay" />
-      
+
       {/* Edge Vignette */}
       <div className="absolute inset-0 shadow-[inset_0_0_200px_rgba(0,0,0,0.95)]" />
     </div>

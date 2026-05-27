@@ -4,16 +4,46 @@ import { Target, Calendar as CalendarIcon, Clock, ChevronRight, Brain } from "lu
 import { useNavigate } from "react-router-dom";
 
 export default function GoalsPage() {
+  const [formData, setFormData] = useState({
+    targetArea: "dsa",
+    deadline: "",
+    skillLevel: "beginner",
+    dailyStudyTime: "2.5"
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      navigate("/auth");
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/plans/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        navigate("/dashboard");
+      } else {
+        const data = await response.json();
+        alert("Failed to generate plan: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Error generating plan:", err);
+      alert("Connection error. Is the backend running?");
+    } finally {
       setIsSubmitting(false);
-      navigate("/dashboard");
-    }, 2500); // simulate AI generation time
+    }
   };
 
   return (
@@ -54,7 +84,11 @@ export default function GoalsPage() {
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Target Area</label>
-              <select className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none">
+              <select 
+                value={formData.targetArea}
+                onChange={(e) => setFormData({...formData, targetArea: e.target.value})}
+                className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none"
+              >
                 <option value="dsa">Data Structures & Algorithms</option>
                 <option value="exams">University Exams</option>
                 <option value="skills">New Skill (e.g. React.js)</option>
@@ -66,13 +100,23 @@ export default function GoalsPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">Deadline</label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input type="date" className="w-full bg-black/50 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all color-scheme-dark" />
+                  <input 
+                    type="date" 
+                    required
+                    value={formData.deadline}
+                    onChange={(e) => setFormData({...formData, deadline: e.target.value})}
+                    className="w-full bg-black/50 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all color-scheme-dark" 
+                  />
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Skill Level</label>
-                <select className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none">
+                <select 
+                  value={formData.skillLevel}
+                  onChange={(e) => setFormData({...formData, skillLevel: e.target.value})}
+                  className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none"
+                >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
@@ -83,20 +127,26 @@ export default function GoalsPage() {
             <div>
               <label className="flex items-center justify-between text-sm font-medium text-gray-300 mb-2">
                 <span>Daily Study Time</span>
-                <span className="text-primary">2.5 Hours</span>
+                <span className="text-primary">{formData.dailyStudyTime} Hours</span>
               </label>
               <div className="flex items-center gap-4">
                 <Clock className="w-5 h-5 text-gray-500" />
-                <input type="range" min="1" max="8" step="0.5" defaultValue="2.5" className="w-full accent-primary h-2 bg-white/10 rounded-lg appearance-none cursor-pointer" />
+                <input 
+                  type="range" min="1" max="8" step="0.5" 
+                  value={formData.dailyStudyTime}
+                  onChange={(e) => setFormData({...formData, dailyStudyTime: e.target.value})}
+                  className="w-full accent-primary h-2 bg-white/10 rounded-lg appearance-none cursor-pointer" 
+                />
               </div>
             </div>
 
-            <button type="submit" className="w-full mt-4 py-4 bg-primary text-white rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_30px_rgba(225,29,72,0.6)]">
-              Generate AI Plan <ChevronRight className="w-5 h-5" />
+            <button type="submit" disabled={isSubmitting} className="w-full mt-4 py-4 bg-primary text-white rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] disabled:opacity-50">
+              {isSubmitting ? "Generating..." : "Generate AI Plan"} <ChevronRight className="w-5 h-5" />
             </button>
           </form>
         </motion.div>
       </div>
     </div>
+
   );
 }

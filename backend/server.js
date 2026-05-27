@@ -15,6 +15,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Backend 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/plans', require('./routes/planRoutes'));
 app.use('/api/notes', require('./routes/notesRoutes'));
+app.use('/api/progress', require('./routes/progressRoutes'));
 
 const PORT = process.env.PORT || 7000;
 

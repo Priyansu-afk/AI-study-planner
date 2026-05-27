@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="bg-black/95 border-t border-white/5 pt-12 pb-8 mt-auto relative z-10 w-full">
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-10">
-          
+
           {/* Left: Brand & Description */}
           <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 text-center md:text-left">
             <div>
@@ -24,7 +24,7 @@ export default function Footer() {
 
           {/* Right: Social Icons */}
           <div className="flex items-center gap-5">
-            {[ 
+            {[
               { icon: <FaTwitter />, label: 'Twitter', color: '#1DA1F2', url: 'https://twitter.com' },
               { icon: <FaInstagram />, label: 'Instagram', color: '#E4405F', url: 'https://instagram.com' },
               { icon: <FaGithub />, label: 'GitHub', color: '#ffffff', url: 'https://github.com' },
@@ -47,14 +47,14 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-500">
-            &copy; {currentYear} StudyPlan.AI. All rights reserved.
+            &copy; {currentYear}
           </p>
           <div className="flex items-center gap-6 text-xs text-gray-400">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
+            <a href="#" className="hover:text-white transition-colors"><i style={{ color: 'red' }}>Privacy Policy</i></a>
+            <a href="#" className="hover:text-white transition-colors"><i style={{ color: 'red' }}>Terms of Service</i></a>
+            <a href="#" className="hover:text-white transition-colors"><i style={{ color: 'red' }}>Cookie Policy</i></a>
             <div className="flex items-center gap-2 text-gray-600 border-l border-white/10 pl-6">
-              <span>Made with</span>
+              <span style={{ color: "white" }}>Made with</span>
               <span className="text-primary">&hearts;</span>
             </div>
           </div>

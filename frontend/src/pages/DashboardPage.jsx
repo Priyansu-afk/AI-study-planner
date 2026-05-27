@@ -7,18 +7,46 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [plans, setPlans] = useState([]);
+  const [stats, setStats] = useState({ streak: 0, totalCompleted: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    if (!token) {
+      navigate("/auth");
+      return;
+    }
+
     // Get user info
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
 
-    fetchPlans();
-  }, []);
+    fetchData();
+  }, [token]);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [plansRes, statsRes] = await Promise.all([
+        fetch("/api/plans", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/progress/stats", { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      
+      const plansData = await plansRes.json();
+      const statsData = await statsRes.json();
+      
+      if (plansRes.ok) setPlans(plansData);
+      if (statsRes.ok) setStats(statsData);
+      
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setIsLoading(false);
+    }
+  };
 
   const fetchPlans = async () => {
+    // Keep this for backward compatibility or individual updates
     try {
       const response = await fetch("/api/plans", {
         headers: { Authorization: `Bearer ${token}` }
@@ -27,10 +55,8 @@ export default function DashboardPage() {
       if (response.ok) {
         setPlans(data);
       }
-      setIsLoading(false);
     } catch (err) {
       console.error("Error fetching plans:", err);
-      setIsLoading(false);
     }
   };
 
@@ -51,7 +77,12 @@ export default function DashboardPage() {
       });
 
       if (response.ok) {
-        // Optimistically update or just re-fetch
+        const data = await response.json();
+        // Update stats from response if available
+        if (data.streak !== undefined) {
+          setStats(prev => ({ ...prev, streak: data.streak }));
+        }
+        // Re-fetch plans to update UI
         fetchPlans();
       }
     } catch (err) {
@@ -69,7 +100,24 @@ export default function DashboardPage() {
 
   // Use the most recent plan
   const activePlan = plans.length > 0 ? plans[plans.length - 1] : null;
-  const todayTasks = activePlan?.planData?.days[0]?.tasks || [];
+  
+  // Calculate which day of the plan we are on
+  const getTodayInfo = () => {
+    if (!activePlan || !activePlan.planData || !activePlan.planData.days) return { tasks: [], dayIndex: 0 };
+    
+    const startDate = new Date(activePlan.createdAt);
+    startDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const diffTime = today - startDate;
+    const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+    
+    const dayIndex = diffDays < activePlan.planData.days.length ? diffDays : 0;
+    return { tasks: activePlan.planData.days[dayIndex].tasks || [], dayIndex };
+  };
+
+  const { tasks: todayTasks, dayIndex: currentDayIndex } = getTodayInfo();
   
   const completedCount = todayTasks.filter(t => t.completed).length;
   const totalCount = todayTasks.length;
@@ -98,7 +146,7 @@ export default function DashboardPage() {
             <Flame className="w-6 h-6 text-orange-500" />
             <div>
               <div className="text-sm text-gray-400 font-medium">Current Streak</div>
-              <div className="text-xl font-bold text-white tracking-wide">0 Days 🔥</div>
+              <div className="text-xl font-bold text-white tracking-wide">{stats.streak || 0} Days 🔥</div>
             </div>
           </motion.div>
         </div>
@@ -117,7 +165,7 @@ export default function DashboardPage() {
                 </h2>
                 {activePlan && (
                   <span className="text-xs font-semibold px-3 py-1 bg-primary/20 text-primary rounded-full">
-                    Day 1: AI Adjusted
+                    Day {currentDayIndex + 1}: AI Adjusted
                   </span>
                 )}
               </div>
@@ -138,7 +186,7 @@ export default function DashboardPage() {
                     >
                       <div className="flex items-center gap-4">
                         <button 
-                          onClick={() => handleToggleTask(activePlan._id, 0, i, task.completed)}
+                          onClick={() => handleToggleTask(activePlan._id, currentDayIndex, i, task.completed)}
                           className={`transition-colors ${task.completed ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}
                         >
                           {task.completed ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
