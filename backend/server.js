@@ -17,6 +17,20 @@ app.use('/api/plans', require('./routes/planRoutes'));
 app.use('/api/notes', require('./routes/notesRoutes'));
 app.use('/api/progress', require('./routes/progressRoutes'));
 
+app.use((req, res) => {
+  res.status(404).json({
+    message: 'Route not found',
+    path: req.originalUrl,
+  });
+});
+
+app.use((err, req, res, next) => {
+  console.error('Unhandled server error:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Server error',
+  });
+});
+
 const PORT = process.env.PORT || 7000;
 
 // Remove the strict connection error block for initial scaffolding mode

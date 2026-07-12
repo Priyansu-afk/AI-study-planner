@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, User, ArrowRight, Key } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { apiUrl } from "../utils/api";
 
 export default function AuthPage() {
   const location = useLocation();
@@ -31,6 +32,19 @@ export default function AuthPage() {
     return () => clearInterval(interval);
   }, [timer]);
 
+  const readResponse = async (response) => {
+    const contentType = response.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+
+    const text = await response.text();
+    throw new Error(
+      `Server returned non-JSON (status ${response.status}): ${text.slice(0, 200)}`
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -43,7 +57,7 @@ export default function AuthPage() {
     const name = formData.get('fullname') || "";
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = isLogin ? apiUrl('/api/auth/login') : apiUrl('/api/auth/register');
       const payload = isLogin ? { email, password } : { name, email, password };
       
       const response = await fetch(endpoint, {
@@ -51,8 +65,8 @@ export default function AuthPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
-      const data = await response.json();
+
+      const data = await readResponse(response);
       
       if (!response.ok) throw new Error(data.detail || data.message || 'Something went wrong');
       
@@ -85,13 +99,13 @@ export default function AuthPage() {
     const otp = formData.get('otp');
 
     try {
-      const response = await fetch('/api/auth/verify-otp', {
+      const response = await fetch(apiUrl('/api/auth/verify-otp'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail, otp })
       });
-      
-      const data = await response.json();
+
+      const data = await readResponse(response);
       
       if (!response.ok) throw new Error(data.detail || data.message || 'Invalid OTP');
       
@@ -109,13 +123,13 @@ export default function AuthPage() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const response = await fetch('/api/auth/resend-otp', {
+      const response = await fetch(apiUrl('/api/auth/resend-otp'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail })
       });
-      
-      const data = await response.json();
+
+      const data = await readResponse(response);
       if (!response.ok) throw new Error(data.detail || data.message || 'Failed to resend OTP');
       
       setTimer(30);

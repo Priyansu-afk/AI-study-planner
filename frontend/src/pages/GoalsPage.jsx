@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Target, Calendar as CalendarIcon, Clock, ChevronRight, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../utils/api";
 
 export default function GoalsPage() {
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ export default function GoalsPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/plans/generate", {
+      const response = await fetch(apiUrl("/api/plans/generate"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

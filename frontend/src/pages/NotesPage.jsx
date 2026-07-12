@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, FileText, Pin, MoreVertical, Link as LinkIcon, Trash2, Save, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../utils/api";
 
 export default function NotesPage() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function NotesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const API_URL = "/api/notes";
+  const API_URL = apiUrl("/api/notes");
   const token = localStorage.getItem("token");
 
   const config = {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Circle, Flame, TrendingUp, Calendar as CalendarIcon, Clock, Loader2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../utils/api";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -28,8 +29,8 @@ export default function DashboardPage() {
     setIsLoading(true);
     try {
       const [plansRes, statsRes] = await Promise.all([
-        fetch("/api/plans", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/progress/stats", { headers: { Authorization: `Bearer ${token}` } })
+        fetch(apiUrl("/api/plans"), { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(apiUrl("/api/progress/stats"), { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
       const plansData = await plansRes.json();
@@ -48,7 +49,7 @@ export default function DashboardPage() {
   const fetchPlans = async () => {
     // Keep this for backward compatibility or individual updates
     try {
-      const response = await fetch("/api/plans", {
+      const response = await fetch(apiUrl("/api/plans"), {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -62,7 +63,7 @@ export default function DashboardPage() {
 
   const handleToggleTask = async (planId, dayIndex, taskIndex, currentStatus) => {
     try {
-      const response = await fetch("/api/plans/update-task", {
+      const response = await fetch(apiUrl("/api/plans/update-task"), {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
